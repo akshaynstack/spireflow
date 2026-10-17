@@ -108,6 +108,17 @@ very first run.
 macOS `.dmg` on macOS — PyInstaller cannot cross-compile. `.github/workflows/release.yml`
 runs both on a runner matrix.
 
+To publish downloadable installers, tag a commit:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow builds both platforms and attaches the `.exe` and `.dmg` to a
+GitHub **Release**. Pushes to `main` build the same installers but keep them as
+workflow artifacts only (Actions run → *Artifacts*).
+
 Notes:
 
 - The installer is large (~480 MB): that is torch plus the model weights.
