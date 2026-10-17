@@ -1,0 +1,25 @@
+node_modules/
+out/
+dist/
+release/
+.vite/
+*.tsbuildinfo
+
+# Python
+server/.venv/
+__pycache__/
+*.pyc
+
+# Packaging artifacts
+server/build/
+server/dist/
+build/fermion-cache/
+
+# Local data / models
+.cache/
+*.log
+*.wav
+
+# OS
+Thumbs.db
+.DS_Store

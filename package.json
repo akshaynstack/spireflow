@@ -1,0 +1,39 @@
+{
+  "name": "spireflow",
+  "version": "0.1.0",
+  "description": "Hold a key, speak, and your words appear in any app. Local dictation powered by Phonon-2.",
+  "main": "./out/main/index.js",
+  "author": "Spireflow",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "setup:py": "py -m venv server/.venv && server/.venv/Scripts/python.exe -m pip install -r server/requirements.txt",
+    "build:sidecar": "node tools/build_sidecar.mjs",
+    "stage:model": "node tools/stage_model.mjs",
+    "dist:win": "npm run build && npm run build:sidecar && npm run stage:model && electron-builder --win",
+    "dist:mac": "npm run build && npm run build:sidecar && npm run stage:model && electron-builder --mac",
+    "pack": "npm run build && npm run stage:model && electron-builder --dir",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.3.0",
+    "node-global-key-listener": "^0.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.8.0",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^6.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  }
+}

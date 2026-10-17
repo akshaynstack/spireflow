@@ -1,0 +1,3 @@
+# Dev-only tools (icon generation). Install into the sidecar venv:
+#   server/.venv/Scripts/python.exe -m pip install -r tools/requirements.txt
+pillow

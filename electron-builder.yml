@@ -1,0 +1,66 @@
+appId: com.spireflow.dictation
+productName: Spireflow
+copyright: Copyright © 2026 Spireflow
+
+directories:
+  output: release
+  buildResources: build
+
+# Drop the other platforms' key-server binaries before archiving (size + AV false positives).
+afterPack: tools/afterPack.js
+
+# Only the compiled app + its production deps ship inside app.asar.
+files:
+  - out/**/*
+  - package.json
+  - "!**/*.map"
+
+# Native binaries that cannot be loaded from inside an asar archive.
+asarUnpack:
+  - node_modules/node-global-key-listener/bin/**
+  - node_modules/ffmpeg-static/**
+
+# Fully self-contained: the frozen Python sidecar and the model weights ride
+# next to the app and are used directly (no download, no separate install).
+extraResources:
+  - from: server/dist/spireflow-sidecar
+    to: sidecar
+  - from: build/fermion-cache
+    to: fermion-cache
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Spireflow
+  artifactName: ${productName}-Setup-${version}.${ext}
+  uninstallDisplayName: Spireflow
+
+mac:
+  icon: build/icon.png
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    NSMicrophoneUsageDescription: Spireflow uses your microphone to turn speech into text on your device.
+    NSHumanReadableCopyright: Copyright © 2026 Spireflow
+
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}

@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            target: --win
+            artifact: release/*.exe
+          - name: macos
+            os: macos-latest
+            target: --mac
+            artifact: release/*.dmg
+    env:
+      # Ad-hoc sign locally; set up Developer ID secrets for notarized releases.
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Create venv and install Python dependencies
+        shell: bash
+        run: |
+          python -m venv server/.venv
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            PY="server/.venv/Scripts/python.exe"
+          else
+            PY="server/.venv/bin/python"
+          fi
+          "$PY" -m pip install --upgrade pip
+          "$PY" -m pip install -r server/requirements.txt pyinstaller
+
+      - name: Prefetch Phonon-2 weights
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            PY="server/.venv/Scripts/python.exe"
+          else
+            PY="server/.venv/bin/python"
+          fi
+          "$PY" -c "import fermion; fermion.load_speech('phonon-2')"
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Freeze the sidecar
+        run: npm run build:sidecar
+
+      - name: Stage the model weights
+        run: npm run stage:model
+
+      - name: Package the installer
+        run: npx electron-builder ${{ matrix.target }} --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spireflow-${{ matrix.name }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error

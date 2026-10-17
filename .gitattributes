@@ -1,0 +1,7 @@
+# Normalize to LF so workflow shell steps keep working when checked out on Windows.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.ico binary
+*.exe binary

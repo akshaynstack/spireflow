@@ -1,0 +1,9 @@
+fermion-research
+fastapi
+uvicorn[standard]
+python-multipart
+soundfile
+scipy
+zstandard
+safetensors
+torch
