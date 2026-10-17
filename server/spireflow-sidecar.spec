@@ -6,6 +6,7 @@ runtime, torch, the fermion native kernels and libsndfile, so the packaged app
 needs nothing installed on the user's machine. PyInstaller must run on the same
 OS/arch as the target (build on Windows for Windows, on macOS for macOS).
 """
+import platform as _platform
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_all, collect_submodules
@@ -13,12 +14,33 @@ from PyInstaller.utils.hooks import collect_all, collect_submodules
 # `SPECPATH` is injected by PyInstaller and points at this spec's directory.
 HERE = Path(SPECPATH)  # noqa: F821
 
+_HOST = {'Windows': 'windows', 'Darwin': 'macos', 'Linux': 'linux'}[_platform.system()]
+
+# `fermion` ships native CPU kernels for EVERY platform under `bin/` and
+# `_speech/_engine_phonon2_cpu/`. Bundling another OS's binaries makes
+# PyInstaller's dependency analysis abort — it reads a Linux ELF as Mach-O on
+# macOS and raises "Unknown Mach-O header: 0x7f454c46" — so keep only this
+# host's kernels (and their .sha256 pins).
+_PLATFORM_ALIASES = (
+    ('macos', ('macos', 'darwin')),
+    ('linux', ('linux',)),
+    ('windows', ('windows', 'win-', '-win', 'win64')),
+)
+
+
+def _for_host(path: str) -> bool:
+    name = Path(path).name.lower()
+    for tag, aliases in _PLATFORM_ALIASES:
+        if any(alias in name for alias in aliases):
+            return tag == _HOST
+    return True
+
+
 datas = []
 binaries = []
 hiddenimports = []
 
 # Packages with data files or dynamic imports PyInstaller cannot see statically.
-# `fermion` ships the native CPU kernels under `bin/` and `_speech/_engine_phonon2_cpu/`.
 for pkg in [
     'fermion',
     'soundfile',
@@ -34,6 +56,9 @@ for pkg in [
 ]:
     try:
         d, b, h = collect_all(pkg)
+        if pkg == 'fermion':
+            d = [(src, dst) for src, dst in d if _for_host(src)]
+            b = [(src, dst) for src, dst in b if _for_host(src)]
         datas += d
         binaries += b
         hiddenimports += h
