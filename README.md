@@ -111,6 +111,9 @@ runs both on a runner matrix.
 Notes:
 
 - The installer is large (~480 MB): that is torch plus the model weights.
+- The sidecar spec prunes the other platforms' native kernels before analysis —
+  PyInstaller aborts when it meets a foreign binary (on macOS it reads a Linux
+  ELF as Mach-O). CI pins the PyInstaller toolchain to the tested version.
 - The frozen sidecar is built windowed (`console=False`), so no console appears;
   its logs are piped to the Electron main process.
 - macOS needs **Accessibility** (global hotkey) and **Microphone** permission.

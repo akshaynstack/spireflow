@@ -59,7 +59,7 @@ jobs:
             PY="server/.venv/bin/python"
           fi
           "$PY" -m pip install --upgrade pip
-          "$PY" -m pip install -r server/requirements.txt pyinstaller
+          "$PY" -m pip install -r server/requirements.txt "pyinstaller==6.22.3" "pyinstaller-hooks-contrib==2026.8"
 
       - name: Prefetch Phonon-2 weights
         shell: bash
