@@ -49,11 +49,10 @@ nsis:
 mac:
   icon: build/icon.png
   category: public.app-category.productivity
+  # Build only the runner's own CPU arch: the frozen sidecar cannot be
+  # cross-compiled, so an x64 .dmg must be built on an x64 macOS runner.
   target:
-    - target: dmg
-      arch:
-        - arm64
-        - x64
+    - dmg
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist

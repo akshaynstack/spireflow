@@ -15,15 +15,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # One runner per target arch: PyInstaller (the sidecar) cannot cross-compile,
+        # so each arch is frozen natively on a matching runner.
         include:
           - name: windows
             os: windows-latest
-            target: --win
+            target: --win --x64
             artifact: release/*.exe
-          - name: macos
+          - name: macos-arm64
             os: macos-latest
-            target: --mac
+            target: --mac --arm64
             artifact: release/*.dmg
+          # Intel Macs run on the x64 image. Comment in if you need universal support.
+          # - name: macos-x64
+          #   os: macos-15-intel
+          #   target: --mac --x64
+          #   artifact: release/*.dmg
     env:
       # Ad-hoc sign locally; set up Developer ID secrets for notarized releases.
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
