@@ -42,6 +42,35 @@ def render(size: int) -> Image.Image:
     return img
 
 
+def render_template(size: int) -> Image.Image:
+    """macOS menu-bar template: monochrome bars on a transparent background.
+
+    Template images are tinted by the OS (black in light mode, white in dark
+    mode), so only the alpha channel matters.
+    """
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    pad = size * 0.16
+    bar_w = size * 0.09
+    gap = size * 0.06
+    total = len(BARS) * bar_w + (len(BARS) - 1) * gap
+    x = (size - total) / 2
+    max_h = size - pad * 2
+
+    for frac in BARS:
+        h = max_h * frac
+        y0 = (size - h) / 2
+        draw.rounded_rectangle(
+            [x, y0, x + bar_w, y0 + h],
+            radius=bar_w / 2,
+            fill=(0, 0, 0, 255),
+        )
+        x += bar_w + gap
+
+    return img
+
+
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     base = render(256)
@@ -50,7 +79,11 @@ def main() -> None:
         sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
     )
     render(512).save(OUT / "icon.png")
-    print(f"wrote {OUT / 'icon.ico'} and {OUT / 'icon.png'}")
+    # System-tray assets (shipped via electron-builder `files`).
+    render(32).save(OUT / "tray.png")
+    render_template(16).save(OUT / "trayTemplate.png")
+    render_template(32).save(OUT / "trayTemplate@2x.png")
+    print(f"wrote app + tray icons to {OUT}")
 
 
 if __name__ == "__main__":

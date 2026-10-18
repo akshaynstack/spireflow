@@ -13,6 +13,12 @@ afterPack: tools/afterPack.js
 files:
   - out/**/*
   - package.json
+  # App + system-tray icons (read at runtime from app.getAppPath()/build).
+  - build/icon.png
+  - build/icon.ico
+  - build/tray.png
+  - build/trayTemplate.png
+  - build/trayTemplate@2x.png
   - "!**/*.map"
 
 # Native binaries that cannot be loaded from inside an asar archive.

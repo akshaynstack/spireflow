@@ -28,6 +28,7 @@ import {
   hideOverlay,
   showOverlay
 } from './overlay'
+import { createTray, destroyTray, notifyBackground } from './tray'
 import type {
   AppInfo,
   BlobTranscribeResult,
@@ -39,10 +40,25 @@ import type {
 
 app.setAppUserModelId('com.spireflow.dictation')
 
+// Since closing the window parks the app in the tray, opening it again (desktop
+// shortcut, Start menu) must surface the running instance rather than spawning
+// a duplicate sidecar/hotkey. Skipped in dev so each `npm run dev` gets a fresh
+// instance (otherwise a stale tray process hijacks the launch).
+if (app.isPackaged) {
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+  } else {
+    app.on('second-instance', () => showMainWindow())
+  }
+}
+
 let mainWindow: BrowserWindow | null = null
 let hotkey: Hotkey | null = null
 let hotkeyAvailable = false
 let dictating = false
+// Set when the user really means to exit (tray menu / Cmd+Q); until then the
+// window close button only hides the app to the system tray.
+let quitting = false
 let lastStatus: ServerStatus = {
   running: false,
   ready: false,
@@ -95,6 +111,15 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
 
+  // Closing the window parks the app in the system tray instead of exiting, so
+  // dictation stays available in the background.
+  mainWindow.on('close', (event) => {
+    if (quitting) return
+    event.preventDefault()
+    mainWindow?.hide()
+    notifyBackground()
+  })
+
   mainWindow.on('closed', () => {
     mainWindow = null
     destroyOverlay()
@@ -110,6 +135,23 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+}
+
+/** Brings the main window back from the tray, recreating it if needed. */
+function showMainWindow(): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
+    mainWindow.focus()
+    return
+  }
+  createWindow()
+  createOverlay()
+}
+
+function quitApp(): void {
+  quitting = true
+  app.quit()
 }
 
 async function sidecarTranscribePath(path: string, hotwords: string[]): Promise<SidecarResult> {
@@ -352,6 +394,7 @@ app.whenReady().then(async () => {
   startSidecar()
   createWindow()
   createOverlay()
+  createTray({ onShow: showMainWindow, onQuit: quitApp })
 
   hotkey = new Hotkey({
     onStart: startDictation,
@@ -374,15 +417,20 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow()
       createOverlay()
+    } else {
+      showMainWindow()
     }
   })
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
+  // The app is a background dictation tool: keep it resident in the tray until
+  // the user explicitly quits (tray menu / Cmd+Q).
 })
 
 app.on('before-quit', () => {
+  quitting = true
+  destroyTray()
   hotkey?.kill()
   destroyOverlay()
   stopSidecar()
