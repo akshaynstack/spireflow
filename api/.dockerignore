@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Local runtime data: SQLite DB, model cache, logs.
+data/
+*.db
+*.db-wal
+*.db-shm
+*.log
+
+# Dev / test artifacts.
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.git/
+.gitignore
+README.md

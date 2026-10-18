@@ -1,0 +1,16 @@
+# Spireflow API — Python dependencies.
+#
+# torch is pulled in by fermion-research. The extra index is the CPU wheel
+# channel so Docker images stay small; override with a CUDA index if you have
+# a GPU (see README). On Apple silicon / Windows the standard wheels apply.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+soundfile>=0.12
+scipy>=1.11
+python-dotenv>=1.0
+zstandard
+safetensors
+fermion-research>=0.2.11

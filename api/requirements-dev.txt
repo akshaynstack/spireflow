@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# Local development / CI only.
+pytest>=8.0
+httpx>=0.27
