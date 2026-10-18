@@ -1,6 +1,6 @@
 {
   "name": "spireflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hold a key, speak, and your words appear in any app. Local dictation powered by Phonon-2.",
   "main": "./out/main/index.js",
   "author": "Spireflow",

@@ -76,6 +76,14 @@ npm run start       # preview the production bundle
 npm run typecheck   # tsc for main/preload and renderer
 ```
 
+## Running in the background
+
+Closing the window does **not** quit the app: it hides to the **system tray**
+(the menu bar on macOS) and keeps dictation live in the background, showing a
+one-time tray notification. Reopen it from the tray icon (click on Windows/Linux,
+menu-bar item on macOS); quit from the tray menu. A single-instance lock means
+launching the app again just resurfaces the running window.
+
 ## Build a self-contained installer
 
 The installer bundles **everything** — the Electron app, a frozen Python sidecar
@@ -89,9 +97,9 @@ npm install
 npm run setup:py                       # local venv with fermion-research
 server\.venv\Scripts\python.exe -m pip install pyinstaller
 
-npm run dist:win                       # -> release/Spireflow-Setup-0.1.0.exe
+npm run dist:win                       # -> release/Spireflow-Setup-0.2.0.exe
 # or
-npm run dist:mac                       # -> release/Spireflow-0.1.0-<arch>.dmg
+npm run dist:mac                       # -> release/Spireflow-0.2.0-<arch>.dmg
 ```
 
 `dist:*` runs four steps: `electron-vite build` → freeze the sidecar
@@ -111,8 +119,8 @@ runs both on a runner matrix.
 To publish downloadable installers, tag a commit:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 The workflow builds both platforms and attaches the `.exe` and `.dmg` to a
@@ -188,6 +196,10 @@ server/
   spireflow-sidecar.spec   PyInstaller spec (frozen standalone sidecar)
   requirements.txt
   setup.ps1
+api/
+  app/             Standalone OpenAI-compatible STT API (FastAPI + SQLite keys)
+  Dockerfile, docker-compose.yml
+  README.md        Independent service — shares no code with the desktop app
 tools/
   smoke_stt.py     load the model + transcribe a generated wav (no Electron)
   make_icon.py     regenerate build/icon.ico + build/icon.png
@@ -221,6 +233,17 @@ server\.venv\Scripts\python.exe server\app.py
 curl http://127.0.0.1:8756/health
 ```
 
+## Standalone API
+
+`api/` is a **separate, self-contained** OpenAI-compatible speech-to-text service
+(FastAPI + Phonon-2, hashed API keys in SQLite, Docker-ready). It shares **no
+code** with the desktop app and can be deployed on its own. See
+[`api/README.md`](api/README.md).
+
+```
+POST /v1/audio/transcriptions   ->  {"text": "..."}
+```
+
 ## Roadmap
 
 - [x] Electron + React shell, Detta-style UI
@@ -236,6 +259,8 @@ curl http://127.0.0.1:8756/health
 - [x] Microphone device picker + Settings test/diagnostics area
 - [x] Hotwords, dictionary, insights, quick notes
 - [x] Packaging with electron-builder (self-contained installer: frozen sidecar + bundled model)
+- [x] Close to system tray / menu bar and keep dictating in the background
+- [x] Standalone OpenAI-compatible speech-to-text API (`api/`)
 
 ## Attribution
 
