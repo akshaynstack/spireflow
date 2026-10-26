@@ -28,11 +28,20 @@ asarUnpack:
 
 # Fully self-contained: the frozen Python sidecar and the model weights ride
 # next to the app and are used directly (no download, no separate install).
+# The licence/attribution files travel with the redistributed model and FFmpeg.
 extraResources:
   - from: server/dist/spireflow-sidecar
     to: sidecar
   - from: build/fermion-cache
     to: fermion-cache
+  - from: LICENSE
+    to: licenses/LICENSE
+  - from: NOTICE
+    to: licenses/NOTICE
+  - from: THIRD_PARTY_NOTICES.md
+    to: licenses/THIRD_PARTY_NOTICES.md
+  - from: LICENSES
+    to: licenses/texts
 
 win:
   icon: build/icon.ico

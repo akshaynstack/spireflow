@@ -11,7 +11,7 @@ services:
     environment:
       # First run boots this key so you can call the API immediately.
       SPIREFLOW_BOOTSTRAP_KEY: ${SPIREFLOW_BOOTSTRAP_KEY:-sk-spireflow-dev-local-key}
-      SPIREFLOW_MODEL: ${SPIREFLOW_MODEL:-phonon-2}
+      SPIREFLOW_MODEL: ${SPIREFLOW_MODEL:-phonon-2.5}
       SPIREFLOW_REQUIRE_AUTH: ${SPIREFLOW_REQUIRE_AUTH:-true}
       SPIREFLOW_MAX_UPLOAD_MB: ${SPIREFLOW_MAX_UPLOAD_MB:-100}
       SPIREFLOW_DB: /data/spireflow.db

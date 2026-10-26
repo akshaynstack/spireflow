@@ -27,7 +27,7 @@ def health() -> dict:
 def root() -> dict:
     return {
         "name": "Spireflow API",
-        "description": "OpenAI-compatible speech-to-text powered by Phonon-2.",
+        "description": "OpenAI-compatible speech-to-text powered by Phonon-2.5.",
         "version": __version__,
         "ready": engine.ready,
         "endpoints": [

@@ -6,10 +6,17 @@ interface HeroProps {
   hotkey: string
 }
 
+function modelLabel(model: string | null): string {
+  if (!model) return 'Phonon-2.5'
+  if (model.includes('2.5-en') || model.endsWith('-English')) return 'Phonon-2.5 English'
+  if (model.includes('2.5')) return 'Phonon-2.5'
+  return model
+}
+
 export default function Hero({ status, hotkey }: HeroProps) {
   const tone = status.ready ? 'ok' : status.running ? 'warn' : 'bad'
   const label = status.ready
-    ? `Phonon-2 \u00b7 ready on ${status.device ?? 'CPU'}`
+    ? `${modelLabel(status.model)} \u00b7 ready on ${status.device ?? 'CPU'}`
     : status.running
       ? 'Loading model\u2026'
       : 'Model offline'

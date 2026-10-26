@@ -13,4 +13,4 @@ scipy>=1.11
 python-dotenv>=1.0
 zstandard
 safetensors
-fermion-research>=0.2.11
+fermion-research>=0.2.15,<0.3

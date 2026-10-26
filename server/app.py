@@ -1,13 +1,16 @@
 """Spireflow speech sidecar.
 
-Loads Phonon-2 (via the `fermion-research` package) once, then exposes a tiny
+Loads Phonon-2.5 (via the `fermion-research` package) once, then exposes a tiny
 local HTTP API that the Electron app calls:
 
     GET  /health           -> model + device readiness
     POST /transcribe_path  -> {"path": "C:/audio/clip.wav"}
     POST /transcribe       -> multipart file upload
 
-Only Phonon-2 is used here. See https://www.fermionresearch.com/models/phonon-2/
+Phonon-2.5 covers 25 languages and detects the spoken language automatically.
+The desktop app defaults to the English-only Phonon-2.5 for the best English
+accuracy; set SPIREFLOW_MODEL=phonon-2.5 for 25-language dictation, or phonon-2
+for the previous release. See https://www.fermionresearch.com/models/phonon-2-5/
 """
 
 from __future__ import annotations
@@ -49,14 +52,14 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-MODEL_ID = os.environ.get("SPIREFLOW_MODEL", "phonon-2")
+MODEL_ID = os.environ.get("SPIREFLOW_MODEL", "phonon-2.5-en")
 PORT = int(os.environ.get("SPIREFLOW_PORT", "8756"))
 
 state: dict = {"ready": False, "error": None, "speech": None, "device": None}
 
 
 def load_model() -> None:
-    """Load Phonon-2 into memory. Runs once at startup; can take 10-40s."""
+    """Load Phonon-2.5 into memory. Runs once at startup; can take 10-40s."""
     try:
         import fermion
 

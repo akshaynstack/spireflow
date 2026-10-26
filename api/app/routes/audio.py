@@ -32,7 +32,7 @@ _MAX_HOTWORDS = 25
 
 
 def _prompt_to_hotwords(prompt: str | None) -> list[str]:
-    """Best-effort map of OpenAI's free-text `prompt` onto Phonon-2 hotwords."""
+    """Best-effort map of OpenAI's free-text `prompt` onto Phonon-2.5 hotwords."""
     if not prompt:
         return []
     parts = prompt.replace("\n", ",").split(",")
@@ -126,7 +126,7 @@ async def _handle(
         payload = verbose_json(
             result,
             task=task,
-            language=language or "english",
+            language=language or "auto",
             granularities=granularities or [],
         )
         return JSONResponse(payload)
@@ -171,8 +171,9 @@ async def translations(
     temperature: float | None = Form(default=None),
     principal: Principal = Depends(require_api_key),
 ) -> Response:
-    """Translate audio to English. Phonon-2 is English-first, so this mirrors
-    transcription with OpenAI's `task: "translate"` marker in verbose output."""
+    """Translate audio to English. Phonon-2.5 detects the spoken language but
+    does not translate, so this mirrors transcription with OpenAI's
+    `task: "translate"` marker in verbose output."""
     return await _handle(
         request=request,
         task="translate",

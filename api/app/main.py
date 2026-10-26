@@ -49,7 +49,7 @@ app = FastAPI(
     title="Spireflow API",
     version=__version__,
     description=(
-        "OpenAI-compatible speech-to-text API powered by Phonon-2. "
+        "OpenAI-compatible speech-to-text API powered by Phonon-2.5. "
         "Point any OpenAI client at this base URL and call "
         "`/v1/audio/transcriptions` with an audio file."
     ),

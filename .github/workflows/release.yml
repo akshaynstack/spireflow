@@ -61,7 +61,7 @@ jobs:
           "$PY" -m pip install --upgrade pip
           "$PY" -m pip install -r server/requirements.txt "pyinstaller==6.22.3" "pyinstaller-hooks-contrib==2026.8"
 
-      - name: Prefetch Phonon-2 weights
+      - name: Prefetch Phonon-2.5 weights
         shell: bash
         run: |
           if [ "${{ runner.os }}" = "Windows" ]; then
@@ -69,7 +69,7 @@ jobs:
           else
             PY="server/.venv/bin/python"
           fi
-          "$PY" -c "import fermion; fermion.load_speech('phonon-2')"
+          "$PY" -c "import fermion; fermion.load_speech('phonon-2.5-en')"
 
       - name: Build production bundle
         run: npm run build

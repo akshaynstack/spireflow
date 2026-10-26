@@ -1,11 +1,14 @@
-"""Smoke test: load Phonon-2 and run a transcription through the public API."""
+"""Smoke test: load Phonon-2.5 and run a transcription through the public API."""
 
 import inspect
+import os
 
 import numpy as np
 import soundfile as sf
 
 import fermion
+
+MODEL_ID = os.environ.get("SPIREFLOW_MODEL", "phonon-2.5-en")
 
 
 def make_wav(path: str, seconds: float = 2.0, sr: int = 16000) -> None:
@@ -15,8 +18,8 @@ def make_wav(path: str, seconds: float = 2.0, sr: int = 16000) -> None:
 
 
 def main() -> None:
-    print("loading phonon-2 (first run downloads ~164 MB)...")
-    speech = fermion.load_speech("phonon-2")
+    print(f"loading {MODEL_ID} (first run downloads ~156 MB)...")
+    speech = fermion.load_speech(MODEL_ID)
     print("speech type:", type(speech))
     methods = [m for m in dir(speech) if not m.startswith("_")]
     print("methods:", methods)

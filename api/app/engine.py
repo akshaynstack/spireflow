@@ -1,6 +1,6 @@
 """Speech-to-text engine wrapper.
 
-Loads Phonon-2 once (via the `fermion-research` package) and exposes a
+Loads Phonon-2.5 once (via the `fermion-research` package) and exposes a
 thread-safe `transcribe()` that returns rich, timestamped output suitable for
 OpenAI's `verbose_json`, `srt` and `vtt` formats.
 """
@@ -22,7 +22,7 @@ from .errors import OpenAIError
 #: Formats libsndfile reads directly. Everything else is transcoded with ffmpeg.
 _NATIVE_EXT = {".wav", ".flac", ".ogg", ".aiff", ".aif"}
 
-#: Phonon-2 accepts at most 25 hotwords per call.
+#: Phonon-2.5 accepts at most 25 hotwords per call.
 _MAX_HOTWORDS = 25
 
 

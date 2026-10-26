@@ -55,7 +55,7 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
-        model = os.getenv("SPIREFLOW_MODEL", "phonon-2")
+        model = os.getenv("SPIREFLOW_MODEL", "phonon-2.5")
 
         # The configured model is always served; extra ids let clients such as
         # the OpenAI SDKs (which hard-code `whisper-1`) work unchanged.

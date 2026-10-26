@@ -1,7 +1,7 @@
 # Spireflow API
 
 An **OpenAI-compatible speech-to-text API** powered by
-[Phonon-2](https://www.fermionresearch.com/models/phonon-2/) (via the
+[Phonon-2.5](https://www.fermionresearch.com/models/phonon-2-5/) (via the
 `fermion-research` package).
 
 It is a standalone service — completely separate from the desktop app — that you
@@ -21,7 +21,8 @@ POST /v1/audio/transcriptions   ->  {"text": "..."}
 - API keys stored **hashed** (SHA-256) in a local **SQLite** database
 - Per-request usage logging and a `/v1/usage` reporting endpoint
 - `GET /v1/models` so OpenAI SDKs work unchanged (`whisper-1` is aliased)
-- Optional `prompt` mapped onto Phonon-2 hotwords
+- Optional `prompt` mapped onto Phonon-2.5 hotwords
+- 25 languages, detected automatically from the audio
 - ffmpeg transcoding for mp3/m4a and friends (falls back to libsndfile formats)
 - Runs on CPU by default; GPU is a build-arg away
 
@@ -35,7 +36,7 @@ api/
     database.py    SQLite: api_keys + requests (usage)
     security.py    Bearer-token auth dependency
     apikeys.py     Key minting / hashing helpers
-    engine.py      Phonon-2 loader + transcription wrapper
+    engine.py      Phonon-2.5 loader + transcription wrapper
     formats.py     json / text / srt / vtt / verbose_json rendering
     errors.py      OpenAI-shaped error envelope + handlers
     cli.py         Create / list / revoke API keys
@@ -209,8 +210,8 @@ console.log(result.text);
 | --------------------------- | ---------- | ------------------------------------------------------------ |
 | `file`                      | file       | **required**                                                 |
 | `model`                     | string     | default = configured model; `whisper-1` accepted             |
-| `language`                  | string     | informational; echoed in `verbose_json`                      |
-| `prompt`                    | string     | mapped onto Phonon-2 hotwords (comma/newline separated)      |
+| `language`                  | string     | informational; defaults to `auto` (the model detects it)     |
+| `prompt`                    | string     | mapped onto Phonon-2.5 hotwords (comma/newline separated)    |
 | `response_format`           | string     | `json` (default) · `text` · `srt` · `verbose_json` · `vtt`   |
 | `temperature`               | float      | accepted for compatibility; currently unused                 |
 | `timestamp_granularities[]` | repeatable | `word` adds `words[]` to `verbose_json`                      |
@@ -229,7 +230,7 @@ the CLI (below) — no restart needed, they become valid immediately.
 | --------------------------- | ---------------------- | ------------------------------------------------ |
 | `SPIREFLOW_HOST`            | `0.0.0.0`              | Bind host                                        |
 | `SPIREFLOW_PORT`            | `8000`                 | Bind port                                        |
-| `SPIREFLOW_MODEL`           | `phonon-2`             | Model passed to `fermion.load_speech`            |
+| `SPIREFLOW_MODEL`           | `phonon-2.5`           | Model passed to `fermion.load_speech`            |
 | `SPIREFLOW_MODELS`          | `whisper-1`            | Extra ids advertised by `/v1/models` (comma sep) |
 | `SPIREFLOW_REQUIRE_AUTH`    | `true`                 | Enforce bearer-token auth on `/v1` routes        |
 | `SPIREFLOW_BOOTSTRAP_KEY`   | –                      | Key ensured to exist at startup                  |
@@ -273,7 +274,17 @@ downloads the model.
 - The engine is single-flight: concurrent transcription requests are serialised
   behind a lock. Scale with more containers/replicas rather than workers (each
   worker would load its own copy of the model).
-- Phonon-2 is English-first; `language` is informational and `translations`
-  behaves like transcription.
-- `srt`/`vtt` timestamps come from Phonon-2's own token timings and are rounded
+- Phonon-2.5 detects the language from the audio; `language` is informational and
+  `translations` behaves like transcription (the model transcribes, it does not
+  translate).
+- `srt`/`vtt` timestamps come from Phonon-2.5's own token timings and are rounded
   to milliseconds.
+- Set `SPIREFLOW_MODEL=phonon-2.5-en` for the English-only model, or `phonon-2`
+  to pin the previous release.
+
+## License
+
+The service code is MIT-licensed, like the rest of Spireflow. The
+Phonon-2.5 weights it downloads are CC-BY-4.0 by Fermion Research (a derivative
+of NVIDIA Parakeet TDT 0.6B v3); see [`../NOTICE`](../NOTICE) and
+[`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).

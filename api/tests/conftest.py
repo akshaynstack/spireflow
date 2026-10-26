@@ -14,6 +14,8 @@ os.environ["SPIREFLOW_DB"] = os.path.join(_TMP, "test.db")
 os.environ["SPIREFLOW_REQUIRE_AUTH"] = "false"
 os.environ["SPIREFLOW_LOAD_MODEL"] = "false"
 os.environ["SPIREFLOW_LOG_REQUESTS"] = "false"
+# Pin the model so a developer's api/.env cannot change what the suite asserts.
+os.environ["SPIREFLOW_MODEL"] = "phonon-2.5"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -28,7 +30,7 @@ def client(monkeypatch):
         return TranscriptResult(
             text="hello world",
             duration=2.0,
-            model="phonon-2",
+            model="phonon-2.5",
             segments=[Segment(id=1, start=0.0, end=2.0, text="hello world")],
             words=[Word(text="hello", start=0.0, end=1.0), Word(text="world", start=1.0, end=2.0)],
             decode_seconds=0.05,

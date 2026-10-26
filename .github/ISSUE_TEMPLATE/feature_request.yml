@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: "[feat] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: I often dictate in ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe what you would like to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Dictation / hotkey
+        - Overlay / waveform
+        - History / stats
+        - Model / transcription quality
+        - API (`api/`)
+        - Packaging / installers
+        - Docs
+        - Other

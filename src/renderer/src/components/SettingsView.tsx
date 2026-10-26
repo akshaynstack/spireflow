@@ -38,6 +38,14 @@ export default function SettingsView({
       ? 'Loading\u2026'
       : 'Offline'
 
+  const modelName = status.model
+    ? status.model.includes('2.5-en') || status.model.endsWith('-English')
+      ? 'Phonon-2.5 English · Fermion Research'
+      : status.model.includes('2.5')
+        ? 'Phonon-2.5 · Fermion Research'
+        : status.model
+    : 'Phonon-2.5 · Fermion Research'
+
   return (
     <div className="page">
       <header className="page-header">
@@ -49,7 +57,7 @@ export default function SettingsView({
         <h3>Speech model</h3>
         <div className="field">
           <span className="field-label">Model</span>
-          <span className="field-value">Phonon-2 · Fermion Research</span>
+          <span className="field-value">{modelName}</span>
         </div>
         <div className="field">
           <span className="field-label">Status</span>
@@ -62,6 +70,11 @@ export default function SettingsView({
           <span className="field-label">Processing</span>
           <span className="field-value">On device · nothing leaves your machine</span>
         </div>
+        <p className="card-note">
+          The English-only model is the default: it is the most accurate for English
+          and never emits words from another language. For 25-language dictation,
+          start Spireflow with <span className="mono">SPIREFLOW_MODEL=phonon-2.5</span>.
+        </p>
         <div className="card-actions">
           <button className="btn-primary" onClick={onRestart}>
             Restart engine

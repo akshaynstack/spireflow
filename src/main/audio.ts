@@ -13,7 +13,7 @@ const ffmpegPath = ffmpegStatic
   ? ffmpegStatic.replace('app.asar', 'app.asar.unpacked')
   : null
 
-/** Formats Phonon-2 reads directly (via libsndfile). Everything else goes through ffmpeg. */
+/** Formats Phonon-2.5 reads directly (via libsndfile). Everything else goes through ffmpeg. */
 const NATIVE_EXT = new Set(['.wav', '.flac', '.ogg', '.aiff', '.aif'])
 
 export interface PreparedAudio {

@@ -7,8 +7,10 @@ release/
 
 # Python
 server/.venv/
+.venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Packaging artifacts
 server/build/
@@ -19,7 +21,17 @@ build/fermion-cache/
 .cache/
 *.log
 *.wav
+*.db
 
-# OS
+# Environment files (keep the example)
+.env
+.env.*
+!.env.example
+api/.env
+api/data/
+
+# Editors / OS
+.idea/
+.vscode/
 Thumbs.db
 .DS_Store

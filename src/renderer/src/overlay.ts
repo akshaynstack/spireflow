@@ -23,6 +23,29 @@ let raf = 0
 let live = false
 let soundOn = true
 
+/**
+ * Keep the microphone stream warm between dictations. Opening a device takes
+ * 100-400 ms (longer for Bluetooth), and that delay used to eat the first
+ * syllable of every clip. Reusing the stream means the recorder starts on the
+ * same tick as the shortcut. The mic is released after a quiet period.
+ */
+const WARM_IDLE_MS = 5 * 60 * 1000
+let warmStream: MediaStream | null = null
+let warmDeviceId: string | null = null
+let warmTimer: number | undefined
+
+/**
+ * Raw capture, no OS/browser DSP. Echo cancellation and noise suppression
+ * gate the start of speech and pump the level; for ASR the model wants the
+ * unprocessed signal. Mono keeps the encoder from picking a silent channel.
+ */
+const MIC_CONSTRAINTS: MediaTrackConstraints = {
+  echoCancellation: false,
+  noiseSuppression: false,
+  autoGainControl: false,
+  channelCount: 1
+}
+
 function resize(): void {
   const dpr = window.devicePixelRatio || 1
   const rect = canvas.getBoundingClientRect()
@@ -121,8 +144,6 @@ function releaseMedia(): void {
     cancelAnimationFrame(raf)
     raf = 0
   }
-  stream?.getTracks().forEach((track) => track.stop())
-  stream = null
   analyser = null
   data = null
   if (audioCtx) {
@@ -132,6 +153,47 @@ function releaseMedia(): void {
   recorder = null
   chunks = []
   document.body.classList.remove('recording')
+}
+
+function stopWarmStream(): void {
+  if (warmTimer) {
+    window.clearTimeout(warmTimer)
+    warmTimer = undefined
+  }
+  warmStream?.getTracks().forEach((track) => track.stop())
+  warmStream = null
+  warmDeviceId = null
+  stream = null
+}
+
+function scheduleWarmStop(): void {
+  if (warmTimer) window.clearTimeout(warmTimer)
+  warmTimer = window.setTimeout(() => {
+    warmTimer = undefined
+    if (!live) stopWarmStream()
+  }, WARM_IDLE_MS)
+}
+
+function isWarm(): boolean {
+  return Boolean(
+    warmStream && warmStream.getAudioTracks().some((track) => track.readyState === 'live')
+  )
+}
+
+async function acquireStream(deviceId: string | null): Promise<MediaStream> {
+  if (isWarm() && warmDeviceId === deviceId) {
+    scheduleWarmStop()
+    return warmStream as MediaStream
+  }
+
+  stopWarmStream()
+  const audio: MediaTrackConstraints = { ...MIC_CONSTRAINTS }
+  if (deviceId) audio.deviceId = { exact: deviceId }
+  const opened = await navigator.mediaDevices.getUserMedia({ audio, video: false })
+  warmStream = opened
+  warmDeviceId = deviceId
+  scheduleWarmStop()
+  return opened
 }
 
 async function start(payload: OverlayStartPayload): Promise<void> {
@@ -147,14 +209,15 @@ async function start(payload: OverlayStartPayload): Promise<void> {
   document.body.classList.add('recording')
   if (!raf) raf = requestAnimationFrame(loop)
 
-  const audio: MediaTrackConstraints = {
-    echoCancellation: true,
-    noiseSuppression: true
+  // Create the audio context while the mic opens, so the level meter and the
+  // start tone are ready the moment the stream arrives.
+  if (!audioCtx) {
+    audioCtx = new AudioContext()
+    await audioCtx.resume().catch(() => {})
   }
-  if (payload.deviceId) audio.deviceId = { exact: payload.deviceId }
 
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio })
+    stream = await acquireStream(payload.deviceId)
   } catch (err) {
     live = false
     releaseMedia()
@@ -167,17 +230,8 @@ async function start(payload: OverlayStartPayload): Promise<void> {
     return
   }
 
-  audioCtx = new AudioContext()
-  await audioCtx.resume().catch(() => {})
-  const source = audioCtx.createMediaStreamSource(stream)
-  analyser = audioCtx.createAnalyser()
-  analyser.fftSize = 512
-  analyser.smoothingTimeConstant = 0.75
-  source.connect(analyser)
-  data = new Uint8Array(analyser.frequencyBinCount)
-
-  tone('start')
-
+  // Start the recorder before anything else: every millisecond spent here is
+  // audio the user already spoke.
   chunks = []
   const mime = pickMime()
   recorder = new MediaRecorder(
@@ -187,10 +241,21 @@ async function start(payload: OverlayStartPayload): Promise<void> {
   recorder.ondataavailable = (e) => {
     if (e.data.size) chunks.push(e.data)
   }
+  const blobType = mime || 'audio/webm'
   recorder.onstop = () => {
-    void finish()
+    const blob = new Blob(chunks, { type: blobType })
+    void finish(blob)
   }
   recorder.start(120)
+
+  tone('start')
+
+  const source = audioCtx.createMediaStreamSource(stream)
+  analyser = audioCtx.createAnalyser()
+  analyser.fftSize = 512
+  analyser.smoothingTimeConstant = 0.75
+  source.connect(analyser)
+  data = new Uint8Array(analyser.frequencyBinCount)
 }
 
 function stop(): void {
@@ -204,10 +269,9 @@ function stop(): void {
   }
 }
 
-async function finish(): Promise<void> {
-  const mime = recorder?.mimeType || 'audio/webm'
-  const blob = new Blob(chunks, { type: mime })
+async function finish(blob: Blob): Promise<void> {
   releaseMedia()
+  scheduleWarmStop()
 
   if (blob.size < 1400) {
     api.sendError('Recording was too short — hold the shortcut while you speak.')
@@ -224,5 +288,6 @@ api.onStart((payload) => {
 api.onStop(() => stop())
 
 window.addEventListener('resize', resize)
+window.addEventListener('beforeunload', stopWarmStream)
 resize()
 raf = requestAnimationFrame(loop)

@@ -8,7 +8,7 @@ def _result() -> TranscriptResult:
     return TranscriptResult(
         text="hello world",
         duration=2.0,
-        model="phonon-2",
+        model="phonon-2.5",
         segments=[Segment(id=1, start=0.0, end=2.0, text="hello world")],
         words=[Word(text="hello", start=0.0, end=1.0), Word(text="world", start=1.0, end=2.0)],
         timed=True,
@@ -51,6 +51,6 @@ def test_verbose_json_without_words():
 
 
 def test_srt_falls_back_to_whole_file_segment():
-    result = TranscriptResult(text="solo", duration=1.25, model="phonon-2")
+    result = TranscriptResult(text="solo", duration=1.25, model="phonon-2.5")
     body = to_srt(result)
     assert "00:00:00,000 --> 00:00:01,250" in body

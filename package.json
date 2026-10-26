@@ -1,10 +1,34 @@
 {
   "name": "spireflow",
-  "version": "0.2.0",
-  "description": "Hold a key, speak, and your words appear in any app. Local dictation powered by Phonon-2.",
+  "version": "0.3.0",
+  "description": "Hold a key, speak, and your words appear in any app. Local dictation powered by Phonon-2.5.",
   "main": "./out/main/index.js",
-  "author": "Spireflow",
+  "author": "Spireflow contributors",
   "license": "MIT",
+  "private": false,
+  "homepage": "https://github.com/akshaynstack/spireflow#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshaynstack/spireflow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/akshaynstack/spireflow/issues"
+  },
+  "keywords": [
+    "dictation",
+    "speech-to-text",
+    "asr",
+    "stt",
+    "offline",
+    "local-first",
+    "electron",
+    "phonon",
+    "windows",
+    "macos"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",

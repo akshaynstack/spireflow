@@ -13,7 +13,7 @@ def test_models_list(client):
     body = client.get("/v1/models").json()
     ids = {item["id"] for item in body["data"]}
     assert body["object"] == "list"
-    assert "whisper-1" in ids and "phonon-2" in ids
+    assert "whisper-1" in ids and "phonon-2.5" in ids
 
 
 def test_retrieve_unknown_model(client):
